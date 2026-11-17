@@ -1,0 +1,76 @@
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    Index,
+    Integer,
+    MetaData,
+    PrimaryKeyConstraint,
+    String,
+    Table,
+    Text,
+)
+
+metadata = MetaData()
+
+messages = Table(
+    "whatsapp_ai_messages",
+    metadata,
+    Column("user_id", String(200), nullable=False),
+    Column("conversation_key", String(420), nullable=False),
+    Column("conversation_id", String(200)),
+    Column("message_id", String(200), nullable=False),
+    Column("sender_name", String(120), nullable=False),
+    Column("original_message", Text, nullable=False),
+    Column("request_hash", String(64), nullable=False),
+    Column("conversation_context_json", Text, nullable=False),
+    Column("response_language", String(40), nullable=False),
+    Column("received_at", DateTime(timezone=True)),
+    Column("backend_received_at", DateTime(timezone=True)),
+    Column("classification", String(20)),
+    Column("priority_score", Float),
+    Column("explanation", String(500)),
+    Column("detected_language", String(80)),
+    Column("requires_response", Boolean),
+    Column("suggested_response", String(1000), nullable=False, server_default=""),
+    Column("processing_status", String(20), nullable=False),
+    Column("processing_error", String(250)),
+    Column("processing_started_at", DateTime(timezone=True)),
+    Column("lease_expires_at", DateTime(timezone=True)),
+    Column("claim_token", String(64)),
+    Column("attempt_count", Integer, nullable=False, server_default="0"),
+    Column("retryable", Boolean, nullable=False, server_default="1"),
+    Column("next_attempt_at", DateTime(timezone=True)),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    Column("processed_at", DateTime(timezone=True)),
+    Column("ai_response_generated_at", DateTime(timezone=True)),
+    PrimaryKeyConstraint(
+        "user_id",
+        "conversation_key",
+        "message_id",
+        name="pk_whatsapp_ai_messages",
+    ),
+    extend_existing=True,
+)
+
+Index(
+    "ix_whatsapp_ai_messages_conversation_history",
+    messages.c.user_id,
+    messages.c.conversation_key,
+    messages.c.processing_status,
+    messages.c.created_at,
+    messages.c.message_id,
+)
+
+rate_limit_buckets = Table(
+    "api_rate_limit_buckets",
+    metadata,
+    Column("user_id", String(200), nullable=False),
+    Column("window_start", BigInteger, nullable=False),
+    Column("request_count", Integer, nullable=False),
+    PrimaryKeyConstraint("user_id", "window_start", name="pk_api_rate_limit_buckets"),
+    extend_existing=True,
+)

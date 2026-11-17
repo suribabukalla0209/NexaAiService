@@ -1,0 +1,13 @@
+# Environment
+.env
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
